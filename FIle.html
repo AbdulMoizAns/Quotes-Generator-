@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        :root {
+            --bg-gradient-light: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            --bg-gradient-dark: linear-gradient(135deg, #2c3e50 0%, #1a202c 100%);
+            --text-color-light: #2c3e50;
+            --text-color-dark: #ffffff;
+            --container-bg-light: white;
+            --container-bg-dark: #2c3e50;
+            --border-color-light: #e0e0e0;
+            --border-color-dark: #4a5568;
+            --button-bg-light: #3498db;
+            --button-bg-dark: #4299e1;
+            --button-hover-light: #2980b9;
+            --button-hover-dark: #3182ce;
+        }
+
+        body {
+            text-align: center;
+            min-height: 100vh;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg-gradient-light);
+            transition: background 0.3s ease;
+        }
+
+        body.dark-mode {
+            background: var(--bg-gradient-dark);
+            color: var(--text-color-dark);
+        }
+
+        h1 {
+            color: var(--text-color-light);
+            margin-bottom: 2rem;
+            font-size: 2.5rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            transition: color 0.3s ease;
+        }
+
+        .dark-mode h1 {
+            color: var(--text-color-dark);
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .container {
+            background: var(--container-bg-light);
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            width: 90%;
+            max-width: 600px;
+            transition: all 0.3s ease;
+            box-sizing: border-box;
+        }
+
+        .dark-mode .container {
+            background: var(--container-bg-dark);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+        }
+
+        .container:hover {
+            transform: translateY(-5px);
+        }
+
+        .button-container {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 1rem;
+        }
+
+        .quotes {
+            width: 100%;
+            min-height: 150px;
+            border-radius: 12px;
+            font-size: 18px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            border: 2px solid #e0e0e0;
+            resize: none;
+            transition: all 0.3s ease;
+            font-family: inherit;
+            line-height: 1.6;
+            color: #2c3e50;
+            box-sizing: border-box;
+            max-width: 100%;
+            overflow-x: hidden;
+            word-wrap: break-word;
+        }
+
+        .quotes:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 10px rgba(52,152,219,0.2);
+        }
+
+        button {
+            background: var(--button-bg-light);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .dark-mode button {
+            background: var(--button-bg-dark);
+        }
+
+        button:hover {
+            background: var(--button-hover-light);
+            transform: scale(1.05);
+        }
+
+        .dark-mode button:hover {
+            background: var(--button-hover-dark);
+        }
+
+        button:active {
+            transform: scale(0.95);
+        }
+
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: transparent;
+            border: 2px solid currentColor;
+            padding: 8px;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: var(--text-color-light);
+        }
+
+        .dark-mode .theme-toggle {
+            color: var(--text-color-dark);
+        }
+
+        .copy-message {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .copy-message.show {
+            opacity: 1;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease forwards;
+        }
+    </style>
+</head>
+<body>
+    <button class="theme-toggle" id="themeToggle">🌓</button>
+    <div class="copy-message" id="copyMessage">Quote copied to clipboard!</div>
+    <div class="container fade-in">
+        <h1>Daily Inspiration</h1>
+        <form onsubmit="return false">
+            <textarea readonly class="quotes" id="quotes" placeholder="Click generate to get your inspiration..."></textarea>
+            <div class="button-container">
+                <button onclick="generate()" id="gbtn">Generate Quote</button>
+                <button onclick="copyQuote()" id="copyBtn">Copy Quote</button>
+            </div>
+        </form>
+    </div>
+    <script>
+var index = 0;
+var btn = document.getElementById("gbtn");
+var quotesInput = document.getElementById("quotes");
+var themeToggle = document.getElementById("themeToggle");
+var copyMessage = document.getElementById("copyMessage");
+
+// Theme toggle functionality
+themeToggle.addEventListener("click", function() {
+    document.body.classList.toggle("dark-mode");
+    // Save theme preference
+    const isDarkMode = document.body.classList.contains("dark-mode");
+    localStorage.setItem("darkMode", isDarkMode);
+});
+
+// Load saved theme preference
+if (localStorage.getItem("darkMode") === "true") {
+    document.body.classList.add("dark-mode");
+}
+
+// Copy functionality
+function copyQuote() {
+    if (quotesInput.value) {
+        navigator.clipboard.writeText(quotesInput.value).then(() => {
+            copyMessage.classList.add("show");
+            setTimeout(() => {
+                copyMessage.classList.remove("show");
+            }, 2000);
+        });
+    }
+}
+
+function generate() {
+    // Remove the fade-in class
+    quotesInput.classList.remove('fade-in');
+    
+    // Get a new random index different from the current one
+    let newIndex;
+    do {
+        newIndex = Math.floor(Math.random() * quotes.length);
+    } while (newIndex === index && quotes.length > 1);
+    
+    index = newIndex;
+    
+    // Reset the animation
+    void quotesInput.offsetWidth;
+    
+    // Add the class back and set the new quote
+    quotesInput.classList.add('fade-in');
+    quotesInput.value = quotes[index];
+}
+
+const quotes = [
+  "Success is not final, failure is not fatal: it is the courage to continue that counts.",
+  "Dream big and dare to fail.",
+  "Don’t watch the clock; do what it does. Keep going.",
+  "Everything you can imagine is real.",
+  "Start where you are. Use what you have. Do what you can.",
+  "Believe you can and you're halfway there.",
+  "It always seems impossible until it's done.",
+  "Do something today that your future self will thank you for.",
+  "Great things never come from comfort zones.",
+  "Don’t limit your challenges, challenge your limits.",
+  "Push yourself, because no one else is going to do it for you.",
+  "Sometimes later becomes never. Do it now.",
+  "Success doesn’t just find you. You have to go out and get it.",
+  "The harder you work for something, the greater you’ll feel when you achieve it.",
+  "Dream it. Wish it. Do it.",
+  "Little things make big days.",
+  "Don’t stop when you’re tired. Stop when you’re done.",
+  "Wake up with determination. Go to bed with satisfaction.",
+  "Do something every day that brings you closer to your goals.",
+  "Your limitation—it’s only your imagination.",
+  "Push harder than yesterday if you want a different tomorrow.",
+  "Failure is the key to success; each mistake teaches us something.",
+  "Don’t let yesterday take up too much of today.",
+  "If you want to achieve greatness stop asking for permission.",
+  "Go the extra mile—it’s never crowded there.",
+  "Doubt kills more dreams than failure ever will.",
+  "Discipline is doing what needs to be done, even when you don’t feel like doing it.",
+  "Work hard in silence, let success make the noise.",
+  "Don’t wish it were easier, wish you were better.",
+  "Opportunities don’t happen, you create them.",
+  "A little progress each day adds up to big results.",
+  "Set goals. Crush them. Repeat.",
+  "Learn as if you will live forever, live like you will die tomorrow.",
+  "The way to get started is to quit talking and begin doing.",
+  "If you can dream it, you can do it.",
+  "The secret of getting ahead is getting started.",
+  "Don’t be afraid to give up the good to go for the great.",
+  "Difficulties in life are intended to make us better, not bitter.",
+  "If you want to lift yourself up, lift up someone else.",
+  "Do what you can, with what you have, where you are.",
+  "Your time is limited, don’t waste it living someone else’s life.",
+  "Hard work beats talent when talent doesn’t work hard.",
+  "It does not matter how slowly you go as long as you do not stop.",
+  "The best way to predict your future is to create it.",
+  "Success is walking from failure to failure with no loss of enthusiasm.",
+  "A goal without a plan is just a wish.",
+  "Don’t be pushed around by the fears in your mind. Be led by the dreams in your heart.",
+  "Keep your face always toward the sunshine—and shadows will fall behind you.",
+  "Act as if what you do makes a difference. It does.",
+  "Never give up because great things take time.",
+  "Be yourself; everyone else is already taken.",
+  "Sometimes you win, sometimes you learn.",
+  "If you’re going through hell, keep going.",
+  "You don’t find the happy life. You make it.",
+  "Success is liking yourself, liking what you do, and liking how you do it.",
+  "Do what you love, and success will follow.",
+  "Hustle in silence and let your success make the noise.",
+  "Don’t count the days, make the days count.",
+  "Believe in yourself and all that you are.",
+  "Dream bigger. Do bigger.",
+  "In the middle of every difficulty lies opportunity.",
+  "Make each day your masterpiece.",
+  "What we think, we become.",
+  "Act without expectation.",
+  "Be stronger than your excuses.",
+  "Your future is created by what you do today, not tomorrow.",
+  "Don’t wait for opportunity. Create it.",
+  "You only fail when you stop trying.",
+  "Do one thing every day that scares you.",
+  "Happiness is not something ready made. It comes from your own actions.",
+  "Don’t be afraid to start over. It’s a new chance to rebuild what you want.",
+  "You get what you work for, not what you wish for.",
+  "Stay humble. Work hard. Be kind.",
+  "Life is 10% what happens to you and 90% how you react to it.",
+  "Don’t let small minds convince you that your dreams are too big.",
+  "Be so good they can’t ignore you.",
+  "Mistakes are proof that you are trying.",
+  "Success is the sum of small efforts, repeated day in and day out.",
+  "Stay focused and never give up.",
+  "You don’t have to be great to start, but you have to start to be great.",
+  "Work until you no longer have to introduce yourself.",
+  "Don’t call it a dream, call it a plan.",
+  "Stay positive, work hard, make it happen.",
+  "You are stronger than you think.",
+  "Dare to begin.",
+  "Don’t let your dreams be dreams.",
+  "Be a warrior, not a worrier.",
+  "Difficult roads often lead to beautiful destinations.",
+  "Nothing worth having comes easy.",
+  "Success is not how high you have climbed, but how you make a positive difference.",
+  "Work for it more than you hope for it.",
+  "Be patient. Good things take time.",
+  "Stay consistent. Consistency builds confidence.",
+  "Keep going. You’re getting there.",
+  "If it doesn’t challenge you, it won’t change you.",
+  "Your vibe attracts your tribe.",
+  "Never stop learning because life never stops teaching.",
+  "One day or day one. You decide.",
+  "Don’t quit. Suffer now and live the rest of your life as a champion.",
+  "Turn your wounds into wisdom.",
+  "You were born to do great things."
+];
+
+// // function genrate() {
+// index++;
+// generate.value = quotes[index];
+// if (index >= quotes.length) {
+//     index = 0;
+
+
+
+// }
+
+
+    </script>
+</body>
+</html>
